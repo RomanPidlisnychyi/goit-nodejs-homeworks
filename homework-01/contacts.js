@@ -16,22 +16,28 @@ async function getContactById(contactId) {
 
   return findedContactById
     ? findedContactById
-    : `Sorry contact fith 'id: ${contactId}' not found`;
+    : `Sorry contact fith 'id: ${contactId}' is not found`;
 }
 
 async function removeContact(contactId) {
   const contacts = await listContacts();
 
-  const newContacts = contacts.filter(contact => contact.id !== contactId);
-  const newContactsJson = JSON.stringify(newContacts);
+  const removedContact = contacts.find(contact => contact.id === contactId);
 
-  fsPromises.writeFile(contactsPath, newContactsJson);
+  if (removedContact) {
+    const newContacts = contacts.filter(contact => contact.id !== contactId);
+    const newContactsJson = JSON.stringify(newContacts);
+
+    fsPromises.writeFile(contactsPath, newContactsJson);
+  }
+
+  return removedContact
+    ? `Contact: ${JSON.stringify(removedContact)}' was successfully removed!`
+    : `Sorry contact fith 'id: ${contactId}' is not found`;
 }
 
 async function addContact(name, email, phone) {
   const contacts = await listContacts();
-
-  contacts.sort((a, b) => a.id - b.id);
 
   const contact = {
     name,
@@ -46,9 +52,14 @@ async function addContact(name, email, phone) {
   };
 
   const newContacts = [...contacts, contact];
+
+  newContacts.sort((a, b) => a.id - b.id);
+
   const newContactsJson = JSON.stringify(newContacts);
 
   fsPromises.writeFile(contactsPath, newContactsJson);
+
+  return `Contact: ${JSON.stringify(contact)} was successfully added!`;
 }
 
 module.exports = {
